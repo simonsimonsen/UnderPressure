@@ -1,0 +1,45 @@
+div.slot {
+	width: 970px;
+	border: solid 1px #030303;
+	margin: 5px;
+	font-size:11pt;
+}
+
+
+img.icon {
+	padding 10px;
+	margin:0px 10px;
+}
+
+span.slotHeader {
+	font-weight:bold;
+	color:#ffffff;
+}
+
+span.notrunning {
+	font-weight:bold;
+	color:#ff0000;
+}
+
+span.running {
+	font-weight:bold;
+	color:#00fb08;
+}
+
+#main {
+	height:600px;
+	width:1000px;
+	border: solid 1px #030303;
+    color: #84c754;
+	background: url(../img/admin_panel_background.jpg);
+}
+
+#top {
+	text-align: center;
+	font-size:12pt;
+	font-weight:bold;
+    color: #ffffff;
+}
+
+#power {
+}
