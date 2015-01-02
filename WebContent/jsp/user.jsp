@@ -26,36 +26,14 @@
 		String stromValueRow = initValue(props.getProperty("stromValueRow"), request);
 		String stromValueColumn = initValue(props.getProperty("stromValueCol"), request);
 		
-		String depthValueRow = "NA";
-		if(request.getAttribute("showUserDepthValueRow") != null) {
-			depthValueRow = "" + request.getAttribute("showUserDepthValueRow");
-		}
+		String depthValueRow = initValue(props.getProperty("depthValueRow"), request);
+		String depthValueColumn = initValue(props.getProperty("depthValueCol"), request);
 		
-		String depthValueColumn = "NA";
-		if(request.getAttribute("showUserDepthValueColumn") != null) {
-			depthValueColumn = "" + request.getAttribute("showUserDepthValueColumn");
-		}
+		String waterTemperatureValueRow = initValue(props.getProperty("waterTemperatureValueRow"), request);
+		String waterTemperatureValueColumn = initValue(props.getProperty("waterTemperatureValueCol"), request);
 		
-		String waterTemperatureValueRow = "NA";
-		if(request.getAttribute("showUserWaterTemperatureRow") != null) {
-			waterTemperatureValueRow = "" + request.getAttribute("showUserWaterTemperatureRow");
-		}
-		
-		String waterTemperatureValueColumn = "NA";
-		if(request.getAttribute("showUserWaterTemperatureColumn") != null) {
-			waterTemperatureValueColumn = "" + request.getAttribute("showUserWaterTemperatureColumn");
-		}
-		
-		String deepflightPowerValueRow = "NA";
-		if(request.getAttribute("showUserDeepflightPowerRow") != null) {
-			deepflightPowerValueRow = "" + request.getAttribute("showUserDeepflightPowerRow");
-		}
-		
-		String deepflightPowerValueColumn = "NA";
-		if(request.getAttribute("showUserDeepflightPowerColumn") != null) {
-			deepflightPowerValueColumn = "" + request.getAttribute("showUserDeepflightPowerColumn");
-		}
-		
+		String deepflightPowerValueRow = initValue(props.getProperty("deepflightPowerValueRow"), request);
+		String deepflightPowerValueColumn = initValue(props.getProperty("deepflightPowerValueCol"), request);
 	%>
 
 	<div class="slot" id="power">
@@ -68,21 +46,21 @@
 	<div class="slot" id="depth">
 		<img class="icon" src="jsp/img/gauge-icon.png" style="height:25px"/> 
 		<span class="slotHeader">Dive Depth </span> <br />
-		<span class="slotKey">Z</span> <input name="depthRow" class="textfield" type="text" value="<% out.print(depthValueRow); %>" disabled="true"/> 
-		<span class="slotKey">S</span> <input name="depthColumn" class="textfield" type="text" value="<% out.print(depthValueColumn); %>" disabled="true"/>
+		<span class="slotKey">Z</span> <input name="<% out.print(props.getProperty("userDepthRowField")); %>" class="textfield" type="text" value="<% out.print(depthValueRow); %>" disabled="true"/> 
+		<span class="slotKey">S</span> <input name="<% out.print(props.getProperty("userDepthColField")); %>" class="textfield" type="text" value="<% out.print(depthValueColumn); %>" disabled="true"/>
 	</div>
 
 	<div class="slot" id="temperature">
 		<img class="icon" src="jsp/img/temperature-icon.png" style="height:20px"/> 
 		<span class="slotHeader">Water Temperature </span> <br />
-		<span class="slotKey">Z</span> <input name="temperatureRow" class="textfield" type="text" value="<% out.print(waterTemperatureValueRow); %>" disabled="true"/> 
-		<span class="slotKey">S</span> <input name="temperatureColumn" class="textfield" type="text" value="<% out.print(waterTemperatureValueColumn); %>" disabled="true"/>
+		<span class="slotKey">Z</span> <input name="<% out.print(props.getProperty("userWaterTemperatureRowField")); %>" class="textfield" type="text" value="<% out.print(waterTemperatureValueRow); %>" disabled="true"/> 
+		<span class="slotKey">S</span> <input name="<% out.print(props.getProperty("userWaterTemperatureColField")); %>" class="textfield" type="text" value="<% out.print(waterTemperatureValueColumn); %>" disabled="true"/>
 	</div>
 	
-		<div class="slot" id="deepflight-power">
+	<div class="slot" id="deepflight-power">
 		<img class="icon" src="jsp/img/battery-icon.png" style="height:20px"/> 
 		<span class="slotHeader">Deepflight Power </span> <br />
-		<span class="slotKey">Z</span> <input name="temperatureRow" class="textfield" type="text" value="<% out.print(deepflightPowerValueRow); %>" disabled="true"/> 
-		<span class="slotKey">S</span> <input name="temperatureColumn" class="textfield" type="text" value="<% out.print(deepflightPowerValueColumn); %>" disabled="true"/>
+		<span class="slotKey">Z</span> <input name="<% out.print(props.getProperty("userDeepflightPowerRowField")); %>" class="textfield" type="text" value="<% out.print(deepflightPowerValueRow); %>" disabled="true"/> 
+		<span class="slotKey">S</span> <input name="<% out.print(props.getProperty("userDeepflightPowerColField")); %>" class="textfield" type="text" value="<% out.print(deepflightPowerValueColumn); %>" disabled="true"/>
 	</div>
 </form>

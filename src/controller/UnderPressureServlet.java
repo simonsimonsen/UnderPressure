@@ -29,7 +29,6 @@ public class UnderPressureServlet extends HttpServlet {
 
 	InputStream pathStream = getStream("FilePaths.properties");
 	Properties pathProps = new Properties();
-
 	
 	private final String stromTable;
 	private final String depthTable;
@@ -143,7 +142,6 @@ public class UnderPressureServlet extends HttpServlet {
 				isAdmin = true;
 			}
 		}
-
 		
 		// USER PANEL
 		if ((request.getParameter("userRefresh") != null) && (!isAdmin)) {
@@ -151,7 +149,6 @@ public class UnderPressureServlet extends HttpServlet {
 			handleUserPanelDepth(request, response);
 			handleUserPanelWaterTemperature(request, response);
 			handleUserPanelDeepflightPower(request,response);
-
 		}
 
 		// ADMIN PANEL
