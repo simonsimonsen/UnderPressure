@@ -506,6 +506,18 @@ public class UnderPressureServlet extends HttpServlet {
 			row = this.viewProps.getProperty("stromValueRow");
 			col = this.viewProps.getProperty("stromValueCol");
 			break;
+		case TIEFE:
+			row = this.viewProps.getProperty("depthValueRow");
+			col = this.viewProps.getProperty("depthValueCol");
+			break;
+		case TEMPERATUR:
+			row = this.viewProps.getProperty("waterTemperatureValueRow");
+			col = this.viewProps.getProperty("waterTemperatureValueCol");
+			break;
+		case DEEPFLIGHTPOWER:
+			row = this.viewProps.getProperty("deepflightPowerValueRow");
+			col = this.viewProps.getProperty("deepflightPowerValueCol");
+			break;
 		default:
 			break;
 		}
