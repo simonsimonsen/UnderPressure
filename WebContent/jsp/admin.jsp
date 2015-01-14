@@ -15,7 +15,7 @@
 		public boolean initBoolean(String propname, HttpServletRequest request) {
 			boolean value = false;
 			if(request.getAttribute(propname) != null) {
-				String helperString = "" + request.getAttribute("showAdminIsStromDecayRunning");
+				String helperString = "" + request.getAttribute(propname);
 				value = Boolean.valueOf(helperString);
 			}
 			return value;
@@ -27,6 +27,8 @@
 	    
 		// All Strom Variables
 		String stromValue = initValue(props.getProperty("stromValue"), request);
+		String stromMinValue = initValue(props.getProperty("stromMinValue"), request);
+		String stromMaxValue = initValue(props.getProperty("stromMaxValue"), request);
 		String stromValueRow = initValue(props.getProperty("stromValueRow"), request);
 		String stromValueColumn = initValue(props.getProperty("stromValueCol"), request);
 		String stromDecayValue = initValue(props.getProperty("stromDecayValue"), request);
@@ -34,20 +36,9 @@
 		boolean stromIsDecayRunning = initBoolean(props.getProperty("stromIsDecayRunning"), request);
 		
 		// All Depth Variables
-		String depthValue = "NA";
-		if(request.getAttribute("showAdminDepthValue") != null) {
-			depthValue = "" + request.getAttribute("showAdminDepthValue");
-		}
-
-		String depthValueRow = "NA";
-		if(request.getAttribute("showAdminDepthValueRow") != null) {
-			depthValueRow = "" + request.getAttribute("showAdminDepthValueRow");
-		}
-		
-		String depthValueColumn = "NA";
-		if(request.getAttribute("showAdminDepthValueColumn") != null) {
-			depthValueColumn = "" + request.getAttribute("showAdminDepthValueColumn");
-		}
+		String depthValue = initValue(props.getProperty("depthValue"), request);
+		String depthValueRow = initValue(props.getProperty("depthValueRow"), request);
+		String depthValueColumn = initValue(props.getProperty("depthValueCol"), request);
 		
 		String depthDecayAmount = "NA";
 		if(request.getAttribute("showAdminDepthDecayAmount") != null) {
@@ -108,7 +99,7 @@
 			<!-- STROM SLOT -->
 			<div class="slot" id="power">
 				<img class="icon" src="jsp/img/battery-icon.png" style="height:15px"/> 
-				<span class="slotHeader">Power Control >> Current Values</span> 
+				<span class="slotHeader">Power Control >> Current Values >> Values From [<% out.print(stromMinValue); %> to <% out.print(stromMaxValue); %> %]</span> 
 				<br />
 				Power <input name="<% out.print(props.getProperty("adminStromValueField")); %>" class="textfield" type="text" placeholder="<% out.print(stromValue); %>" disabled="true"/><b>%</b> |
 				Player View: 
@@ -133,6 +124,7 @@
 				%>
 			</div>
 
+			<!-- DEPTH SLOT -->
 			<div class="slot" id="depth">
 				<img class="icon" src="jsp/img/gauge-icon.png" style="height:25px"/> 
 				<span class="slotHeader">Dive Depth >> Current Values</span>

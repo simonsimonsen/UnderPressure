@@ -1,5 +1,6 @@
 package controller;
 
+import java.awt.font.NumericShaper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -40,7 +41,9 @@ public class UnderPressureServlet extends HttpServlet {
 	 * All Variables for Strom
 	 */
 	private Integer currentStromValue;
-	private final int startStromValue = 100;
+	private Integer maxStromValue;
+	private Integer minStromValue;
+	private final int startStromValue;
 	private FileDao stromFile;
 	private List<Integer> stromValues;
 	private long stromDecayRate = 360000; // 3 Sekunden
@@ -100,8 +103,11 @@ public class UnderPressureServlet extends HttpServlet {
 		this.simplePassPhrase = pathProps.getProperty("simplePassPhrase"); 
 
 		// Initialize Stromvariables
-		this.currentStromValue = startStromValue;
 		this.stromFile = new FileDao(stromTable);
+		this.maxStromValue = this.stromFile.findMaxValue();
+		this.minStromValue = this.stromFile.findMinValue();
+		this.startStromValue = this.maxStromValue;
+		this.currentStromValue = this.startStromValue;
 		this.stromValues = new ArrayList<Integer>();
 		this.isStromDecayRunning = false;
 
@@ -197,14 +203,16 @@ public class UnderPressureServlet extends HttpServlet {
 		// Handle Add Power Button
 		if (request.getParameter(viewProps.getProperty("adminStromValueInputButton")) != null) {
 			if (request.getParameter(viewProps.getProperty("stromValueInput")) != null) {
-				Integer currentStromValue = this.currentStromValue;
-				Integer stromChangeValue = Integer.parseInt(request.getParameter(viewProps.getProperty("stromValueInput"))); 
-				if (currentStromValue+stromChangeValue >= 100) {
-					setCurrentStromValue(100);
-				} else if (currentStromValue+stromChangeValue <= 0) {
-					setCurrentStromValue(0);
-				} else {
-					setCurrentStromValue(currentStromValue+stromChangeValue);	
+				if (isLegitValue(request.getParameter(viewProps.getProperty("stromValueInput")))) {
+					Integer currentStromValue = this.currentStromValue;
+					Integer stromChangeValue = Integer.parseInt(request.getParameter(viewProps.getProperty("stromValueInput"))); 
+					if (currentStromValue+stromChangeValue >= maxStromValue) {
+						setCurrentStromValue(maxStromValue);
+					} else if (currentStromValue+stromChangeValue <= minStromValue) {
+						setCurrentStromValue(minStromValue);
+					} else {
+						setCurrentStromValue(currentStromValue+stromChangeValue);	
+					}
 				}
 			}
 		}
@@ -212,31 +220,37 @@ public class UnderPressureServlet extends HttpServlet {
 		// Handle Change Decay Button
 		if (request.getParameter(viewProps.getProperty("adminStromDecayChangeButton")) != null) {
 			if (request.getParameter(viewProps.getProperty("stromNewDecayValue")) != null) {
-				Integer stromDecayValue = Integer.parseInt(request.getParameter(viewProps.getProperty("stromNewDecayValue"))); 
-				int dv = stromDecayValue;
-				setStromDecayValue(dv);
+				if (isLegitValue(request.getParameter(viewProps.getProperty("stromNewDecayValue")))) {
+					Integer stromDecayValue = Integer.parseInt(request.getParameter(viewProps.getProperty("stromNewDecayValue"))); 
+					int dv = stromDecayValue;
+					setStromDecayValue(dv);
+				}
 			}
 			if (request.getParameter(viewProps.getProperty("stromNewDecayRate")) != null) {
-				Integer stromDecayRate = Integer.parseInt(request.getParameter(viewProps.getProperty("stromNewDecayRate"))); 
-				int dr = stromDecayRate*1000;
-				setStromDecayRate(dr);
+				if (isLegitValue(request.getParameter(viewProps.getProperty("stromNewDecayRate")))) {
+					Integer stromDecayRate = Integer.parseInt(request.getParameter(viewProps.getProperty("stromNewDecayRate"))); 
+					int dr = stromDecayRate*1000;
+					setStromDecayRate(dr);
+				}
 			}
 			setStromDecayRunning(false);
-			startStromDecay();
+			handleStromDecay();
 		}
 
 		// Start Decay
 		if (request.getParameter(viewProps.getProperty("adminStromDecayStartButton")) != null && (!isStromDecayRunning())) {
 			setStromDecayRunning(true);
-			startStromDecay();
+			handleStromDecay();
 		}
 
 		// Stop Decay
 		if (request.getParameter(viewProps.getProperty("adminStromDecayStopButton")) != null && (isStromDecayRunning())) {
 			setStromDecayRunning(false);
-			startStromDecay();
+			handleStromDecay();
 		}
 		request.setAttribute(viewProps.getProperty("stromValue"), this.currentStromValue);
+		request.setAttribute(viewProps.getProperty("stromMinValue"), this.minStromValue);
+		request.setAttribute(viewProps.getProperty("stromMaxValue"), this.maxStromValue);
 		request.setAttribute(viewProps.getProperty("stromDecayValue"), this.stromDecayValue);
 		request.setAttribute(viewProps.getProperty("stromDecayRate"), fromMillisToSeconds(this.stromDecayRate));
 		request.setAttribute(viewProps.getProperty("stromIsDecayRunning"), this.isStromDecayRunning);
@@ -467,6 +481,15 @@ public class UnderPressureServlet extends HttpServlet {
 	 * ---------------------------- HELPER METHODS ---------------------------------------
 	 */
 	
+	public Boolean isLegitValue (String input) {
+		try {
+			Integer intValue = Integer.valueOf(input);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
+	
 	public InputStream getStream (String relativePath) {
 		InputStream stream = this.getClass().getClassLoader().getResourceAsStream(relativePath);
 		return stream;
@@ -531,7 +554,7 @@ public class UnderPressureServlet extends HttpServlet {
 		}
 	}
 
-	public void startStromDecay() {
+	public void handleStromDecay() {
 		long delay = 1000;
 		long period = this.stromDecayRate;
 		final Timer timer = new Timer();

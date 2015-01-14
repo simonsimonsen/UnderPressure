@@ -70,6 +70,34 @@ public class FileDao {
 
 		return coordinates;
 	}
+	
+	public Integer findMinValue() {
+		String[] firstRow = this.table.get(0);
+		Integer result = Integer.valueOf(firstRow[0]);  
+		
+		for (String[] row : this.table) {
+			for (int i = 0; i < row.length; i++) {
+				if (Integer.valueOf(row[i]) <= result) {
+					result = Integer.valueOf(row[i]);
+				}
+			}
+		}
+		return result;
+	}
+	
+	public Integer findMaxValue() {
+		String[] firstRow = this.table.get(0);
+		Integer result = Integer.valueOf(firstRow[0]);  
+		
+		for (String[] row : this.table) {
+			for (int i = 0; i < row.length; i++) {
+				if (Integer.valueOf(row[i]) >= result) {
+					result = Integer.valueOf(row[i]);
+				}
+			}
+		}
+		return result;
+	}
 
 	public String printRow(int row) {
 		String result = "";
