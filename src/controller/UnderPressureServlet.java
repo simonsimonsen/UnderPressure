@@ -43,7 +43,6 @@ public class UnderPressureServlet extends HttpServlet {
 	private Integer currentStromValue;
 	private Integer maxStromValue;
 	private Integer minStromValue;
-	private final int startStromValue;
 	private FileDao stromFile;
 	private List<Integer> stromValues;
 	private long stromDecayRate = 360000; // 3 Sekunden
@@ -54,7 +53,8 @@ public class UnderPressureServlet extends HttpServlet {
 	 * All Variables for Depth 
 	 */
 	private Integer currentDepthValue;
-	private final int startDepthValue = 10;
+	private Integer maxDepthValue;
+	private Integer minDepthValue;
 	private FileDao depthFile;
 	private List<Integer> depthValues;
 	private long descentAmount = 10; // Meter
@@ -106,14 +106,15 @@ public class UnderPressureServlet extends HttpServlet {
 		this.stromFile = new FileDao(stromTable);
 		this.maxStromValue = this.stromFile.findMaxValue();
 		this.minStromValue = this.stromFile.findMinValue();
-		this.startStromValue = this.maxStromValue;
-		this.currentStromValue = this.startStromValue;
+		this.currentStromValue = this.maxStromValue;
 		this.stromValues = new ArrayList<Integer>();
 		this.isStromDecayRunning = false;
 
 		// Initialize Depthvariables
-		this.currentDepthValue = startDepthValue;
 		this.depthFile = new FileDao(depthTable);
+		this.minDepthValue = this.depthFile.findMinValue();
+		this.maxDepthValue = this.depthFile.findMaxValue();
+		this.currentDepthValue = this.minDepthValue;
 		this.depthValues = new ArrayList<Integer>();
 		this.isDescending = false;
 		this.isFluctuating = false;
@@ -262,71 +263,75 @@ public class UnderPressureServlet extends HttpServlet {
 	public void handleAdminPanelDepth(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 		
-		if (request.getParameter("depthChangeAction") != null) {
-			if (request.getParameter("depthChangeValue") != null) {
-				Integer currentDepthValue = this.currentDepthValue;
-				Integer depthChangeValue = Integer.parseInt(request.getParameter("depthChangeValue")); 
-				if (currentDepthValue+depthChangeValue >= 2000) {
-					setCurrentDepthValue(2000);
-				} else if (currentDepthValue+depthChangeValue <= 0) {
-					setCurrentDepthValue(depthChangeValue);
-				} else {
-					setCurrentDepthValue(currentDepthValue+depthChangeValue);	
+		// Handle Add Depth Button
+		if (viewProps.getProperty("adminDepthValueInputButton") != null) {
+			if (viewProps.getProperty("depthValueInput") != null) {
+				if (isLegitValue(request.getParameter(viewProps.getProperty("depthValueInput")))) {
+					Integer currentDepthValue = this.currentDepthValue;
+					Integer depthChangeValue = Integer.parseInt(request.getParameter(viewProps.getProperty("depthValueInput"))); 
+					if (currentDepthValue+depthChangeValue >= maxDepthValue) {
+						setCurrentDepthValue(maxDepthValue);
+					} else if (currentDepthValue+depthChangeValue <= minDepthValue) {
+						setCurrentDepthValue(minDepthValue);
+					} else {
+						setCurrentDepthValue(currentDepthValue+depthChangeValue);	
+					}
 				}
 			}
 		}
 
-		if (request.getParameter("descentChangeAction") != null) {
-			if (request.getParameter("depthDecayValue") != null) {
-				Integer depthDecayValue = Integer.parseInt(request.getParameter("depthDecayValue")); 
-				int dv = depthDecayValue;
-				setDescentAmount(dv);
+		// Handle Change Descent Button
+		if (request.getParameter(viewProps.getProperty("adminDepthDecayChangeButton")) != null) {
+			if (request.getParameter(viewProps.getProperty("depthNewDecayValue")) != null) {
+				if (isLegitValue(request.getParameter(viewProps.getProperty("depthNewDecayValue")))) {
+					Integer depthDecayValue = Integer.parseInt(request.getParameter(viewProps.getProperty("depthNewDecayValue"))); 
+					int ddv = depthDecayValue;
+					setDescentAmount(ddv);
+				}
 			}
-			if (request.getParameter("depthDecayInterval") != null) {
-				Integer depthDecayInterval = Integer.parseInt(request.getParameter("depthDecayInterval")); 
-				int di = depthDecayInterval*1000;
-				setDescentRate(di);
+			if (request.getParameter(viewProps.getProperty("depthNewDecayRate")) != null) {
+				if (isLegitValue(request.getParameter(viewProps.getProperty("depthNewDecayRate")))) {
+					Integer depthDecayRate = Integer.parseInt(request.getParameter(viewProps.getProperty("depthNewDecayRate"))); 
+					int ddr = depthDecayRate*1000;
+					setDescentRate(ddr);
+				}
 			}
 			setDescending(false);
 			startDescending();
 		}
 
-		if (request.getParameter("startDescending") != null && (!isDescending())) {
+		// Start Descent
+		if (request.getParameter(viewProps.getProperty("adminDepthDecayStartButton")) != null && (!isDescending())) {
 			setDescending(true);
 			startDescending();
 		}
 
-		if (request.getParameter("stopDescending") != null && (isDescending())) {
+		// Stop Descent
+		if (request.getParameter(viewProps.getProperty("adminDepthDecayStopButton")) != null && (isDescending())) {
 			setDescending(false);
 			startDescending();
 		}
 
-		if (request.getParameter("startFluctating") != null && (!isFluctuating() && (!isDescending()))) {
-			setFluctuating(true);
-		}
+		// if (request.getParameter("startFluctating") != null && (!isFluctuating() && (!isDescending()))) {
+		//	setFluctuating(true);
+		// }
 
-		if (request.getParameter("stopFluctating") != null && (isFluctuating() && (!isDescending()))) {
-			setFluctuating(false);
-		}
-
+		// if (request.getParameter("stopFluctating") != null && (isFluctuating() && (!isDescending()))) {
+		//	setFluctuating(false);
+		// }
+		request.setAttribute(viewProps.getProperty("depthValue"), this.currentDepthValue);
+		request.setAttribute(viewProps.getProperty("depthMinValue"), this.minDepthValue);
+		request.setAttribute(viewProps.getProperty("depthMaxValue"), this.maxDepthValue);
+		request.setAttribute(viewProps.getProperty("depthDecayValue"), this.descentAmount);
+		request.setAttribute(viewProps.getProperty("depthDecayRate"), fromMillisToSeconds(this.descentRate));
+		request.setAttribute(viewProps.getProperty("depthIsDecayRunning"), this.isDescending());
+		// request.setAttribute("showAdminIsFluctating", this.isFluctuating);
+		// request.setAttribute("showAdminFluctuationAmount", this.fluctuationAmount);
 		updateRowAndColumn(ValueEnum.TIEFE);
-		request.setAttribute("showAdminDepthValue", this.currentDepthValue);
-		request.setAttribute("showAdminDepthDecayAmount", this.descentAmount);
-		request.setAttribute("showAdminDepthDecayRate", fromMillisToSeconds(this.descentRate));
-		request.setAttribute("showAdminIsDepthDecayRunning", this.isDescending());
-		request.setAttribute("showAdminIsFluctating", this.isFluctuating);
-		request.setAttribute("showAdminFluctuationAmount", this.fluctuationAmount);
-
-		if (this.depthValues.size() >= 1) {
-			request.setAttribute("showAdminDepthValueRow", this.depthValues.get(0));
-			request.setAttribute("showAdminDepthValueColumn", this.depthValues.get(1));
-		} else {
-			PrintWriter writer = response.getWriter();
-			writer.println("<span class=\"error\">No DepthValues in List" + this.depthValues.toString() + "</span>");
-			writer.close();
-		}
+		setValuesToResponse(this.depthValues, ValueEnum.TIEFE, request, response);
 	}
 
+	// ADMIN Water
 	public void handleAdminPanelWaterTemperature(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 
@@ -356,6 +361,7 @@ public class UnderPressureServlet extends HttpServlet {
 		}
 	}
 
+	// ADMIN Deepflight Power
 	public void handleAdminPanelDeepflightPower(HttpServletRequest request,
 			HttpServletResponse response) throws IOException {
 
